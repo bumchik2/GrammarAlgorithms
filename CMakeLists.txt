@@ -7,12 +7,15 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin/)
 
 add_executable(main
   ${PROJECT_SOURCE_DIR}/src/main.cpp
-  ${PROJECT_SOURCE_DIR}/src/solution.cpp
+  ${PROJECT_SOURCE_DIR}/src/grammar.cpp
+  ${PROJECT_SOURCE_DIR}/src/earley.cpp
 )
 
 add_executable(test
   ${PROJECT_SOURCE_DIR}/src/test.cpp
-  ${PROJECT_SOURCE_DIR}/src/solution.cpp
+  ${PROJECT_SOURCE_DIR}/src/grammar.cpp
+  ${PROJECT_SOURCE_DIR}/src/earley.cpp
+  ${PROJECT_SOURCE_DIR}/src/chomsky_to_greybuh.cpp
 )
 
 target_include_directories(main PRIVATE ${PROJECT_SOURCE_DIR}/include)
