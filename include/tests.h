@@ -211,6 +211,24 @@ void testInterpreterOutput(const string& program, const string& expected_output)
 	AssertEqual(os.str(), expected_output);
 }
 
+void testSyntaxTree() {
+	Grammar grammar;
+	grammar.setStartingSymbol("S");
+	vector<Rule> rules = {
+		{"S", {}},
+		{"S", {"(", "S", ")", "S"}},
+	};
+	for (unsigned i = 0; i < rules.size(); ++i) {
+		grammar.addRule(rules[i]);
+	}
+	string word = "(()())";
+	Assert(EarleyAlgorithm().isRecognized(grammar, word),
+			"(()()) is a correct bracket sequence");
+	SyntaxTree syntax_tree = getSyntaxTree(grammar, word);
+	AssertEqual(getName(syntax_tree.root), word, "S |-- word");
+	AssertEqual(syntax_tree.root->rule_number, 1, "rule 1 should be used first");
+}
+
 void testPascalVariables() {
 	AssertEqual(Real, leastCommonType(Integer, Real));
 	AssertEqual(Boolean, leastCommonType(Boolean, Boolean));
@@ -229,7 +247,7 @@ void testPascalVariables() {
 			make_shared<PascalReal>(0.35))), "7 / 20 = 0.35");
 	Assert(isTrue(areEqual(negative(make_shared<PascalReal>(7)), make_shared<PascalReal>(-7))),
 			"- 7 = -7");
-	Assert(isTrue(make_shared<PascalInteger>(1)), "1 should cast to True");
+	Assert(isTrue(make_shared<PascalInteger>(1)), "1 should be casted to True");
 }
 
 void testInterpreter() {
@@ -273,6 +291,7 @@ void runTests() {
 	test_runner.RunTest(testScan, "test scan in earley algorithm");
 	test_runner.RunTest(testSituationsUpdating, "test situations updating");
 	test_runner.RunTest(testIsRecognized, "test earley algorithm 'is recognized' function");
+	test_runner.RunTest(testSyntaxTree, "test syntax tree");
 	test_runner.RunTest(testPascalVariables, "test pascal variable");
 	test_runner.RunTest(testInterpreter, "test pascal interpreter");
 }
