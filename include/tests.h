@@ -23,9 +23,9 @@ void testRemoveEpsilon() {
 	vector<Rule> rules = {
 		{"S'", {"epsilon"}},
 		{"S'", {"b", "S"}},
-		{"S", {"a", "A", "A"}},
-		{"A", {"a"}},
-		{"A", {"epsilon"}},
+		{"S", {"a", "B", "B"}},
+		{"B", {"a"}},
+		{"B", {"epsilon"}},
 	};
 	for (unsigned i = 0; i < rules.size(); ++i) {
 		grammar.addRule(rules[i]);
@@ -37,9 +37,9 @@ void testRemoveEpsilon() {
 		{"S'", {"epsilon"}},
 		{"S'", {"b", "S"}},
 		{"S", {"a"}},
-		{"S", {"a", "A"}},
-		{"S", {"a", "A", "A"}},
-		{"A", {"a"}},
+		{"S", {"a", "B"}},
+		{"S", {"a", "B", "B"}},
+		{"B", {"a"}},
 	};
 	for (unsigned i = 0; i < expected_rules.size(); ++i) {
 		expected_grammar.addRule(expected_rules[i]);
@@ -51,9 +51,9 @@ void testClassifyRuleChomskyToGreybuh() {
 	// S ---> epsilon => 0
 	AssertEqual(classifyRuleChomskyToGreybuh(Rule{"S", {"epsilon"}}, "S"), 0);
 	// A ---> a => 1
-	AssertEqual(classifyRuleChomskyToGreybuh(Rule{"A", {"a"}}, "S"), 1);
+	AssertEqual(classifyRuleChomskyToGreybuh(Rule{"D", {"d"}}, "S"), 1);
 	// A ---> B C => 2
-	AssertEqual(classifyRuleChomskyToGreybuh(Rule{"A", {"B", "C"}}, "S"), 2);
+	AssertEqual(classifyRuleChomskyToGreybuh(Rule{"D", {"B", "C"}}, "S"), 2);
 }
 
 void testChomskyToGreybuh() {
@@ -61,8 +61,8 @@ void testChomskyToGreybuh() {
 	grammar.setStartingSymbol("S");
 	vector<Rule> rules = {
 		{"S", {"epsilon"}},
-		{"S", {"A", "B"}},
-		{"A", {"a"}},
+		{"S", {"D", "B"}},
+		{"D", {"a"}},
 		{"B", {"b"}},
 	};
 	for (unsigned i = 0; i < rules.size(); ++i) {
@@ -73,20 +73,20 @@ void testChomskyToGreybuh() {
 	expected_grammar.setStartingSymbol("S");
 	vector<Rule> expected_rules = {
 		{"S", {"epsilon"}},
-		{"S", {"a", "A\\S"}},
+		{"S", {"a", "D\\S"}},
 		{"S", {"b", "B\\S"}},
-		{"A\\A", {"a", "A\\B", "S\\A"}},
-		{"A\\B", {"a", "A\\B", "S\\B"}},
-		{"A\\S", {"a", "A\\B", "S\\S"}},
-		{"A\\A", {"b", "B\\B", "S\\A"}},
-		{"A\\B", {"b", "B\\B", "S\\B"}},
-		{"A\\S", {"b", "B\\B", "S\\S"}},
-		{"A\\S", {"a", "A\\B"}},
-		{"A\\A", {"b", "S\\A"}},
-		{"A\\B", {"b", "S\\B"}},
-		{"A\\S", {"b"}},
-		{"A\\S", {"b", "B\\B"}},
-		{"A\\S", {"b", "S\\S"}},
+		{"D\\D", {"a", "D\\B", "S\\D"}},
+		{"D\\B", {"a", "D\\B", "S\\B"}},
+		{"D\\S", {"a", "D\\B", "S\\S"}},
+		{"D\\D", {"b", "B\\B", "S\\D"}},
+		{"D\\B", {"b", "B\\B", "S\\B"}},
+		{"D\\S", {"b", "B\\B", "S\\S"}},
+		{"D\\S", {"a", "D\\B"}},
+		{"D\\D", {"b", "S\\D"}},
+		{"D\\B", {"b", "S\\B"}},
+		{"D\\S", {"b"}},
+		{"D\\S", {"b", "B\\B"}},
+		{"D\\S", {"b", "S\\S"}},
 	};
 	for (unsigned i = 0; i < expected_rules.size(); ++i) {
 		expected_grammar.addRule(expected_rules[i]);

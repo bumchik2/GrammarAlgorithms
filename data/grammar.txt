@@ -1,0 +1,142 @@
+S'
+139
+S' 1 S
+S 5 Var Separator Declarations Separator Program
+Separator 0
+Separator 2 space Separator
+Separator 2 newline Separator
+Var 3 v a r
+S 1 Program
+Declarations 0
+Declarations 2 Declaration Declarations
+Declaration 7 Variables Separator : Separator Type ; Separator
+Variables 5 Variable Separator , Separator Variables
+Variables 2 Variable Separator
+Variable 2 AlphabetSymbol Variable0
+Variable0 0
+Variable0 2 AlphabetSymbol Variable0
+AlphabetSymbol 1 a
+AlphabetSymbol 1 b
+AlphabetSymbol 1 c
+AlphabetSymbol 1 d
+AlphabetSymbol 1 e
+AlphabetSymbol 1 f
+AlphabetSymbol 1 g
+AlphabetSymbol 1 h
+AlphabetSymbol 1 i
+AlphabetSymbol 1 j
+AlphabetSymbol 1 k
+AlphabetSymbol 1 l
+AlphabetSymbol 1 m
+AlphabetSymbol 1 n
+AlphabetSymbol 1 o
+AlphabetSymbol 1 p
+AlphabetSymbol 1 q
+AlphabetSymbol 1 r
+AlphabetSymbol 1 s
+AlphabetSymbol 1 t
+AlphabetSymbol 1 u
+AlphabetSymbol 1 v
+AlphabetSymbol 1 w
+AlphabetSymbol 1 x
+AlphabetSymbol 1 y
+AlphabetSymbol 1 z
+Type 1 Integer
+Type 1 Real
+Type 1 String
+Type 1 Boolean
+Type 1 Char
+Char 4 c h a r
+Boolean 7 b o o l e a n
+String 6 s t r i n g
+Integer 7 i n t e g e r
+Real 4 r e a l
+Program 6 Begin Separator Instructions End . Separator
+Instructions 3 Instruction Separator Instructions
+Instructions 0
+Begin 5 b e g i n
+End 3 e n d
+Instruction 3 Expression ; Separator
+Instruction 9 Variable Separator : = Separator Expression Separator ; Separator
+Expression 1 LogicalExpression
+MulExpression 5 ( Separator Expression Separator )
+ArithmeticExpression 1 MulExpression
+MulExpression 1 Number
+MulExpression 4 Separator - Separator MulExpression
+MulExpression 5 MulExpression Separator * Separator MulExpression
+MulExpression 5 MulExpression Separator / Separator MulExpression
+ArithmeticExpression 5 ArithmeticExpression Separator + Separator ArithmeticExpression
+ArithmeticExpression 5 ArithmeticExpression Separator - Separator ArithmeticExpression
+MulExpression 1 Variable
+Number 1 PositiveNumber
+Number 2 - PositiveNumber
+PositiveNumber 2 Digit PositiveNumber0
+PositiveNumber0 0
+PositiveNumber0 2 Digit PositiveNumber0
+Digit 1 0
+Digit 1 1
+Digit 1 2
+Digit 1 3
+Digit 1 4
+Digit 1 5
+Digit 1 6
+Digit 1 7
+Digit 1 8
+Digit 1 9
+Instruction 9 Writeln Separator ( Separator Expression Separator ) ; Separator
+Writeln 7 w r i t e l n
+Instruction 9 If Separator Expression Separator Then Separator Instruction Separator ElsePart
+ElsePart 4 Else Separator Instruction Separator
+Else 4 e l s e
+ElsePart 0
+Then 4 t h e n
+If 2 i f
+Instruction 7 Begin Separator Instructions End Separator ; Separator
+Instruction 7 While Separator Expression Separator Do Separator Instruction
+While 5 w h i l e
+Do 2 d o
+Instruction 16 For Separator Variable Separator : = Separator Expression Separator To
+    Separator Expression Separator Do Separator Instruction
+To 2 t o
+For 3 f o r
+LogicalBit 5 ArithmeticExpression Separator > Separator ArithmeticExpression
+LogicalBit 5 ArithmeticExpression Separator < Separator ArithmeticExpression
+LogicalBit 5 ArithmeticExpression Separator = Separator ArithmeticExpression
+LogicalBit 6 ArithmeticExpression Separator < > Separator ArithmeticExpression
+Expression 1 PackedExpression
+PackedExpression 1 Variable
+PackedExpression 5 ( Separator ArithmeticExpression Separator )
+MulExpression 8 PackedExpression Separator [ Separator Expression Separator ] Separator
+MulExpression 3 ' StringObject '
+StringObject 2 Symbol StringObject
+StringObject 0
+Symbol 1 Digit
+Symbol 1 AlphabetSymbol
+Instruction 15 Variable Separator [ Separator Expression Separator ] Separator : = Separator Expression Separator ; Separator
+MulExpression 1 False
+MulExpression 1 True
+MulExpression 1 FloatingPoint
+False 5 F a l s e
+True 4 T r u e
+FloatingPoint 3 Number . Number
+Instruction 9 Write Separator ( Separator Expression Separator ) ; Separator
+Write 5 w r i t e
+LogicalExpression 1 LogicalBit
+LogicalBit 1 ArithmeticExpression
+LogicalBit 5 ( Separator LogicalExpression Separator )
+LogicalExpression 5 LogicalBit Separator Or Separator LogicalBit
+LogicalBit 5 LogicalBit Separator And Separator LogicalBit
+LogicalBit 3 Not Separator LogicalBit
+Or 2 O r
+And 3 A n d
+Not 3 N o t
+Symbol 1 ServiceSymbol
+ServiceSymbol 1 space
+ServiceSymbol 1 ,
+ServiceSymbol 1 !
+ServiceSymbol 1 .
+ServiceSymbol 1 -
+ServiceSymbol 1 :
+ServiceSymbol 1 ;
+ServiceSymbol 1 (
+ServiceSymbol 1 )
