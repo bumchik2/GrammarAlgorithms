@@ -14,6 +14,7 @@ using std::cout;
 using std::endl;
 using std::swap;
 using std::runtime_error;
+using std::ostream;
 
 enum PascalType {
 	None,
@@ -29,7 +30,7 @@ public:
 	PascalVariable() = default;
 	virtual ~PascalVariable();
 	virtual PascalType getType() const;
-	virtual void print() const {};
+	virtual void print(ostream& out = cout) const {};
 	void* data = nullptr;
 };
 
@@ -41,7 +42,7 @@ public:
 	PascalInteger(int n);
 	~PascalInteger();
 	PascalType getType() const override;
-	void print() const override;
+	void print(ostream& out = cout) const override;
 };
 
 class PascalReal : public PascalVariable {
@@ -52,7 +53,7 @@ public:
 	PascalReal();
 	~PascalReal();
 	PascalType getType() const override;
-	void print() const override;
+	void print(ostream& out = cout) const override;
 };
 
 class PascalChar : public PascalVariable {
@@ -61,7 +62,7 @@ public:
 	PascalChar(char c);
 	~PascalChar();
 	PascalType getType() const override;
-	void print() const override;
+	void print(ostream& out = cout) const override;
 };
 
 class PascalString : public PascalVariable {
@@ -70,7 +71,7 @@ public:
 	PascalString(const string& s);
 	~PascalString();
 	PascalType getType() const override;
-	void print() const override;
+	void print(ostream& out = cout) const override;
 };
 
 class PascalBoolean : public PascalVariable {
@@ -79,7 +80,7 @@ public:
 	PascalBoolean(bool b);
 	~PascalBoolean();
 	PascalType getType() const override;
-	void print() const override;
+	void print(ostream& out = cout) const override;
 };
 
 PascalType getType(const string& s);

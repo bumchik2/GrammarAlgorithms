@@ -12,6 +12,7 @@ using std::ostringstream;
 using std::vector;
 using std::string;
 using std::unordered_set;
+using std::ostream;
 
 const vector<Rule> interpret_rules = {
 	{"Declaration", {"Variables", "Separator", ":", "Separator", "Type", ";", "Separator"}},
@@ -79,38 +80,38 @@ PascalType getType(const SyntaxTree::Node* const node) {
 	return getType(getName(node));
 }
 
-void Interpreter::printVariables() const {
+void Interpreter::printVariables(ostream& out) const {
 	bool first = true;
-	cout << "Variables: ";
+	out << "Variables: ";
 	for (const auto& variable : variables) {
 		if (!first)
-			cout << ", ";
+			out << ", ";
 		first = false;
-		cout << "(" << getTypeName(variable.second->getType()) << " " << variable.first << " = ";
+		out << "(" << getTypeName(variable.second->getType()) << " " << variable.first << " = ";
 		variable.second->print();
-		cout << ")";
+		out << ")";
 	}
 }
 
-void Interpreter::interpret(const SyntaxTree& syntax_tree, const Grammar& grammar) {
-	interpret(syntax_tree.root, grammar);
+void Interpreter::interpret(const SyntaxTree& syntax_tree, const Grammar& grammar, ostream& out) {
+	interpret(syntax_tree.root, grammar, out);
 }
 
-void Interpreter::interpret(const SyntaxTree::Node* const node, const Grammar& grammar) {
+void Interpreter::interpret(const SyntaxTree::Node* const node, const Grammar& grammar, ostream& out) {
 	if (node->symbol == "Separator" || node->rule_number == -1) {
 	}
 
 	if (find(interpret_rules.begin(), interpret_rules.end(),
 			grammar.rules[node->rule_number]) == interpret_rules.end()) {
 		for (unsigned i = 0; i < node->nodes.size(); ++i) {
-			interpret(node->nodes[i], grammar);
+			interpret(node->nodes[i], grammar, out);
 		}
 		return;
 	}
 
 	int special_rule_number = find(interpret_rules.begin(), interpret_rules.end(),
 				grammar.rules[node->rule_number]) - interpret_rules.begin();
-	interpret(node, grammar, special_rule_number);
+	interpret(node, grammar, special_rule_number, out);
 }
 
 shared_ptr<PascalVariable> Interpreter::getExpressionValue(const SyntaxTree::Node* const node, const Grammar& grammar) {
@@ -200,7 +201,7 @@ shared_ptr<PascalVariable> Interpreter::getExpressionValue(const SyntaxTree::Nod
 }
 
 void Interpreter::interpret(const SyntaxTree::Node* const node,
-		const Grammar& grammar, int interpret_rule_number) {
+		const Grammar& grammar, int interpret_rule_number, ostream& out) {
 	switch (interpret_rule_number) {
 	case 0: {
 		vector<string> new_variables = getVariables(node->nodes[0], grammar);
@@ -217,21 +218,21 @@ void Interpreter::interpret(const SyntaxTree::Node* const node,
 		break;
 	} case 2: { //{"Instruction", {"Writeln", "Separator", "(", "Separator", "Expression", "Separator", ")", ";", "Separator"}}
 		shared_ptr<PascalVariable> variable_value = getExpressionValue(node->nodes[4], grammar);
-		variable_value->print();
-		cout << endl;
+		variable_value->print(out);
+		out << endl;
 		break;
 	} case 3: { // "If", "Separator", "Expression", "Separator", "Then",
 		         // "Separator", "Instruction", "Separator", "ElsePart"
 		shared_ptr<PascalVariable> expression_value = getExpressionValue(node->nodes[2], grammar);
 		if (isTrue(expression_value)) {
-			interpret(node->nodes[6], grammar);
+			interpret(node->nodes[6], grammar, out);
 		} else {
-			interpret(node->nodes[8], grammar);
+			interpret(node->nodes[8], grammar, out);
 		}
 		break;
 	} case 4: { // "While", "Separator", "Expression", "Separator", "Do", "Separator", "Instruction"
 		while(isTrue(getExpressionValue(node->nodes[2], grammar))) {
-			interpret(node->nodes[6], grammar);
+			interpret(node->nodes[6], grammar, out);
 		}
 		break;
 	} case 5: { //"For", "Separator", "Variable", "Separator", ":", "=", "Separator", "Expression", "Separator",
@@ -247,7 +248,7 @@ void Interpreter::interpret(const SyntaxTree::Node* const node,
 		int to_int = *reinterpret_cast<int*>(to->data);
 		for (int i = from_int;; i += ((to_int > from_int) ? 1 : -1)) {
 			variables.at(variable_name) = make_shared<PascalInteger>(i);
-			interpret(node->nodes[15], grammar);
+			interpret(node->nodes[15], grammar, out);
 			if (i == to_int) {
 				break;
 			}
@@ -269,12 +270,12 @@ void Interpreter::interpret(const SyntaxTree::Node* const node,
 		(*reinterpret_cast<string*>(variable->data))[index_value] = *(reinterpret_cast<char*>(right_value->data));
 		break;
 	} case 7: { // "Else", "Separator", "Instruction", "Separator"
-		interpret(node->nodes[2], grammar);
+		interpret(node->nodes[2], grammar, out);
 		break;
 	} case 8: { // "Write", "Separator", "(", "Separator", "Expression", "Separator", ")", ";", "Separator"
 		shared_ptr<PascalVariable> variable_value = getExpressionValue(node->nodes[4], grammar);
-			variable_value->print();
-			cout << " ";
+			variable_value->print(out);
+			out << " ";
 			break;
 	} default: {
 		throw runtime_error("unexpected error while interpreting");

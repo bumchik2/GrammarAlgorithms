@@ -46,7 +46,7 @@ PascalType getType(const string& s) {
 PascalType leastCommonType(PascalType type1, PascalType type2) {
 	if (type1 == type2) {
 		return type1;
-	} else if (((type1 == Integer) && type2 == Real) || ((type2 == Integer) && type1 == Real)) {
+	} else if ((type1 == Integer && type2 == Real) || (type2 == Integer && type1 == Real)) {
 		return Real;
 	}else if ((type1 == String && type2 == Char) || (type2 == Char && type1 == String)) {
 		return String;
@@ -99,8 +99,8 @@ PascalInteger::~PascalInteger() {
 PascalType PascalInteger::getType() const {
 	return Integer;
 }
-void PascalInteger::print() const {
-	cout << *reinterpret_cast<int*>(data);
+void PascalInteger::print(ostream& out) const {
+	out << *reinterpret_cast<int*>(data);
 }
 
 PascalReal::PascalReal(const PascalInteger& pascal_integer) {
@@ -121,8 +121,8 @@ PascalReal::~PascalReal() {
 PascalType PascalReal::getType() const {
 	return Real;
 }
-void PascalReal::print() const {
-	cout << *reinterpret_cast<double*>(data);
+void PascalReal::print(ostream& out) const {
+	out << *reinterpret_cast<double*>(data);
 }
 
 PascalChar::PascalChar() {
@@ -137,8 +137,8 @@ PascalChar::~PascalChar() {
 PascalType PascalChar::getType() const {
 	return Char;
 }
-void PascalChar::print() const {
-	cout << *reinterpret_cast<char*>(data);
+void PascalChar::print(ostream& out) const {
+	out << *reinterpret_cast<char*>(data);
 }
 
 PascalString::PascalString() {
@@ -153,8 +153,8 @@ PascalString::~PascalString() {
 PascalType PascalString::getType() const {
 	return String;
 }
-void PascalString::print() const {
-	cout << *reinterpret_cast<string*>(data);
+void PascalString::print(ostream& out) const {
+	out << *reinterpret_cast<string*>(data);
 }
 
 PascalBoolean::PascalBoolean() {
@@ -169,8 +169,8 @@ PascalBoolean::~PascalBoolean() {
 PascalType PascalBoolean::getType() const {
 	return Boolean;
 }
-void PascalBoolean::print() const {
-	cout << (*reinterpret_cast<bool*>(data) ? "True" : "False");
+void PascalBoolean::print(ostream& out) const {
+	out << (*reinterpret_cast<bool*>(data) ? "True" : "False");
 }
 
 bool isTrue(shared_ptr<PascalVariable> pascal_variable) {
@@ -255,7 +255,7 @@ shared_ptr<PascalVariable> multiply(shared_ptr<PascalVariable> a, shared_ptr<Pas
 	} else if (a->getType() == Real) {
 		return make_shared<PascalReal>(*reinterpret_cast<double*>(a->data) * *reinterpret_cast<double*>(b->data));
 	} else {
-		throw runtime_error("unexpected erorr in sum");
+		throw runtime_error("unexpected erorr in multiply");
 	}
 }
 
@@ -268,7 +268,7 @@ shared_ptr<PascalVariable> diff(shared_ptr<PascalVariable> a, shared_ptr<PascalV
 	} else if (a->getType() == Real) {
 		return make_shared<PascalReal>(*reinterpret_cast<double*>(a->data) - *reinterpret_cast<double*>(b->data));
 	} else {
-		throw runtime_error("unexpected erorr in sum");
+		throw runtime_error("unexpected erorr in diff");
 	}
 }
 
@@ -281,7 +281,7 @@ shared_ptr<PascalVariable> divide(shared_ptr<PascalVariable> a, shared_ptr<Pasca
 	} else if (a->getType() == Real) {
 		return make_shared<PascalReal>(*reinterpret_cast<double*>(a->data) / *reinterpret_cast<double*>(b->data));
 	}else {
-		throw runtime_error("unexpected erorr in sum");
+		throw runtime_error("unexpected erorr in divide");
 	}
 }
 

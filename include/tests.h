@@ -4,9 +4,17 @@
 #include "chomsky_to_greybuh.h"
 #include "test_runner.h"
 #include "earley.h"
+#include "pascal_variable.h"
+#include "interpreter.h"
 
 #include <iostream>
+#include <sstream>
+#include <fstream>
+#include <memory>
 
+using std::make_shared;
+using std::ifstream;
+using std::ostringstream;
 using std::cout;
 using std::endl;
 
@@ -191,6 +199,66 @@ void testIsRecognized() {
 				"incorrect bracket sequence test failed");
 }
 
+void testInterpreterOutput(const string& program, const string& expected_output) {
+	ostringstream os;
+	Grammar grammar;
+	ifstream fin1("../data/grammar.txt");
+	fin1 >> grammar;
+	if (!EarleyAlgorithm().isRecognized(grammar, program)) {
+		throw runtime_error("program is incorrect, bad test");
+	}
+	Interpreter().interpret(getSyntaxTree(grammar, program), grammar, os);
+	AssertEqual(os.str(), expected_output);
+}
+
+void testPascalVariables() {
+	AssertEqual(Real, leastCommonType(Integer, Real));
+	AssertEqual(Boolean, leastCommonType(Boolean, Boolean));
+	AssertEqual(String, leastCommonType(String, Char));
+	Assert(isTrue(isLess(make_shared<PascalInteger>(1), make_shared<PascalReal>(1.5))), "1 < 1.5");
+	Assert(isTrue(isGreater(make_shared<PascalReal>(-1), make_shared<PascalReal>(-1.5))), "-1 > -1.5");
+	Assert(isTrue(areEqual(sum(make_shared<PascalInteger>(2), make_shared<PascalInteger>(3)),
+			make_shared<PascalReal>(5))), "2 + 3 = 5");
+	Assert(isTrue(areEqual(multiply(make_shared<PascalInteger>(2), make_shared<PascalInteger>(3)),
+			make_shared<PascalReal>(6))), "2 * 3 = 6");
+	Assert(isTrue(areEqual(diff(make_shared<PascalReal>(-4.5), make_shared<PascalInteger>(2)),
+			make_shared<PascalReal>(-6.5))), "-4.5 - 2 = -6.5");
+	Assert(isTrue(areEqual(sum(make_shared<PascalString>("xyz"), make_shared<PascalChar>('a')),
+			make_shared<PascalString>("xyza"))), "'xyz' + 'a' = 'xyza'");
+	Assert(isTrue(areEqual(divide(make_shared<PascalReal>(7), make_shared<PascalReal>(20)),
+			make_shared<PascalReal>(0.35))), "7 / 20 = 0.35");
+	Assert(isTrue(areEqual(negative(make_shared<PascalReal>(7)), make_shared<PascalReal>(-7))),
+			"- 7 = -7");
+	Assert(isTrue(make_shared<PascalInteger>(1)), "1 should cast to True");
+}
+
+void testInterpreter() {
+	testInterpreterOutput("begin end.", "");
+	testInterpreterOutput("begin writeln('hello, world!'); end.", "hello, world!\n");
+	testInterpreterOutput("begin writeln(2 + 2 * 2); end.", "6\n");
+	testInterpreterOutput("begin writeln(True); end.", "True\n");
+	testInterpreterOutput("var i: integer; begin for i := 1 to 5 do write(i); end.", 
+			              "1 2 3 4 5 ");
+	testInterpreterOutput("var i: integer; begin i := 5;"
+	                      "while i > 0 do begin writeln(i * i); i := i - 1; end; end.", 
+	                      "25\n16\n9\n4\n1\n");
+	testInterpreterOutput("var i: integer; begin i := 5;"
+	                      "if False then writeln(1); else writeln(0); end.", 
+	                      "0\n");
+	testInterpreterOutput("var begin "
+	                      "write(Not (Not True Or Not(False And True And False Or True)));"
+	                      "end.", "True ");
+	testInterpreterOutput("var begin"
+	                      "write(1.0 / 10);"
+	                      "end.", "0.1 ");
+	testInterpreterOutput("var s:string;begin "
+	                      "s := 'abcd'; write(s[0]); s[0] := 'x'; writeln(s[0]);"
+	                      "end.", "a x\n");
+	testInterpreterOutput("var s: string; begin "
+	                      "s := 'ab'; s := s + s; s := s + s; writeln(s);"
+	                      "end.", "abababab\n");
+}
+
 void runTests() {
 	TestRunner test_runner;
 	test_runner.RunTest(testIsAlphabetSymbol, "test determining alphabet symbols");
@@ -205,4 +273,6 @@ void runTests() {
 	test_runner.RunTest(testScan, "test scan in earley algorithm");
 	test_runner.RunTest(testSituationsUpdating, "test situations updating");
 	test_runner.RunTest(testIsRecognized, "test earley algorithm 'is recognized' function");
+	test_runner.RunTest(testPascalVariables, "test pascal variable");
+	test_runner.RunTest(testInterpreter, "test pascal interpreter");
 }
