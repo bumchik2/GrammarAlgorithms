@@ -275,6 +275,9 @@ void testInterpreter() {
 	testInterpreterOutput("var s: string; begin "
 	                      "s := 'ab'; s := s + s; s := s + s; writeln(s);"
 	                      "end.", "abababab\n");
+	testInterpreterOutput("var sa, sb: string; begin "
+	                      "sa := 'ab'; sb := 'cd'; writeln((sa+sb)[3]);"
+	                      "end.", "d\n");
 }
 
 void runTests() {
