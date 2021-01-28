@@ -20,7 +20,7 @@ using std::unordered_set;
 using std::unordered_map;
 
 const unordered_set<string> special_alphabet_symbols = {
-    "(", ")", "{", "}", "{", "}", ";", ":", ".", ",", "[", "]", "O", "A",
+    "(", ")", "{", "}", "{", "}", ";", ":", ".", ",", "[", "]", "O", "A", "$",
     " ", "\n", "*", "+", "-", "/", "=", "<", ">", "'", "F", "T", "N", "!"
 };
 
@@ -89,12 +89,26 @@ void Grammar::addSymbol(const string& symbol) {
     }
 }
 
+void Grammar::addAlphabetSymbol(const string& alphabet_symbol) {
+    if (alphabet_symbol == "epsilon") {
+        return;
+    }
+    if (!isAlphabetSymbol(alphabet_symbol)) {
+        return;
+    }
+    if (find(alphabet_symbols.begin(), alphabet_symbols.end(), alphabet_symbol) == 
+                alphabet_symbols.end()) {
+        alphabet_symbols.push_back(alphabet_symbol);
+    }
+}
+
 void Grammar::addRule(const Rule& rule) {
     if (find(rules.begin(), rules.end(), rule) == rules.end()) {
         rules.push_back(rule);
         addSymbol(rule.from);
         for (unsigned i = 0; i < rule.to.size(); ++i) {
             addSymbol(rule.to[i]);
+            addAlphabetSymbol(rule.to[i]);
         }
     }
 }

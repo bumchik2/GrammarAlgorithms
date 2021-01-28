@@ -17,6 +17,15 @@ struct Rule {
     // alphabet symbols - lower case English symbols
 };
 
+class RuleHash {
+public:
+    size_t operator() (const Rule& rule) const {
+        size_t hash1 = std::hash<size_t>()(rule.from.size());
+        size_t hash2 = std::hash<size_t>()(rule.to.size());
+        return hash1 ^ (hash2 << 1);
+    }
+};
+
 bool isAlphabetSymbol(const string& symbol);
 bool operator == (const Rule& rule1, const Rule& rule2);
 
@@ -29,12 +38,14 @@ class Grammar {
 public:
     void setStartingSymbol(const string& starting_symbol);
     void addSymbol(const string& symbol);
+    void addAlphabetSymbol(const string& alphabet_symbol);
     void addRule(const Rule& rule);
     void removeRule(const Rule& rule);
     bool containsRule(const Rule& rule) const;
 
     string starting_symbol;
     vector<string> symbols;
+    vector<string> alphabet_symbols;
     vector<Rule> rules;
 };
 
