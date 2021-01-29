@@ -12,12 +12,17 @@ using std::endl;
 int main() {
 	Grammar grammar;
 	grammar.setStartingSymbol("S'");
-	vector<Rule> rules = {
+	/*vector<Rule> rules = {
 		{"S'", {"S"}},
 		{"S", {"S", "+", "U"}},
 		{"S", {"U"}},
 		{"U", {"n"}},
 		{"U", {"(", "S", ")"}}
+	};*/
+	vector<Rule> rules = {
+		{"S'", {"S"}},
+		{"S", {}},
+		{"S", {"(", "S", ")", "S"}}
 	};
 	for (unsigned i = 0; i < rules.size(); ++i) {
 		grammar.addRule(rules[i]);

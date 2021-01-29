@@ -228,40 +228,6 @@ void testIsRecognized() {
 			"LR incorrect expression sequence test failed");
 }
 
-void testLRIsRecognized() {
-	Grammar grammar;
-	grammar.setStartingSymbol("S'");
-	vector<Rule> rules = {
-		{"S'", {"S"}},
-		{"S", {}},
-		{"S", {"(", "S", ")", "S"}}
-	};
-	for (unsigned i = 0; i < rules.size(); ++i) {
-		grammar.addRule(rules[i]);
-	}
-	Grammar grammar0;
-	grammar0.setStartingSymbol("S'");
-	vector<Rule> rules0 = {
-		{"S'", {"S"}},
-		{"S", {"S", "+", "U"}},
-		{"S", {"U"}},
-		{"U", {"n"}},
-		{"U", {"(", "S", ")"}}
-	};
-	for (unsigned i = 0; i < rules0.size(); ++i) {
-		grammar0.addRule(rules0[i]);
-	}
-	string correct_expression = "n+n";
-	Assert(EarleyAlgorithm().isRecognized(grammar0, correct_expression),
-			"Earley correct expression test failed");
-	Assert(LRAlgorithm(grammar0).isRecognized(correct_expression),
-			"LR correct expression test failed");
-	string incorrect_expression = "n+((n+(n+n+n)+n)";
-	Assert(!LRAlgorithm(grammar0).isRecognized(incorrect_expression),
-			"LR incorrect expression sequence test failed");
-
-}
-
 void testInterpreterOutput(const string& program, const string& expected_output, 
 		int test_number) {
 	ostringstream os;
