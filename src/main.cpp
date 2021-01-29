@@ -1,5 +1,3 @@
-#include "chomsky_to_greybuh.h"
-#include "earley.h"
 #include "interpreter.h"
 
 #include <iostream>
@@ -29,7 +27,7 @@ void runPascalProgram(const string& program_path) {
 		s += s0;
 	}
 	cout << "program text: " << endl << s;
-	bool is_recognized =  EarleyAlgorithm().isRecognized(grammar, s);
+	bool is_recognized =  isRecognized(grammar, s);
 	cout << "program is " << (is_recognized ? "" : "in") << "correct" << endl << endl;
 	if (!is_recognized)
 		return;

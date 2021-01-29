@@ -2,11 +2,14 @@
 #include "syntax_tree.h"
 #include "lr_algorithm.h"
 
+#include <utility>
 #include <algorithm>
 #include <vector>
 #include <iostream>
 #include <stack>
 
+using std::make_pair;
+using std::pair;
 using std::reverse;
 using std::cout;
 using std::endl;
@@ -191,9 +194,26 @@ ostream& operator << (ostream& os, const stack<T>& st) {
 	return os;
 }
 
-bool LRAlgorithm::isRecognized(string s) {
+bool LRAlgorithm::isRecognized(const string& s) {
+	return analize(s).first;
+}
+
+SyntaxTree LRAlgorithm::getSyntaxTree(const string& s) {
+	return analize(s).second;
+}
+
+pair<bool, SyntaxTree> LRAlgorithm::analize(string s) {
+	for (unsigned i = 0; i < s.size(); ++i) {
+		string alphabet_symbol;
+		alphabet_symbol += s[i];
+		if (find(grammar.alphabet_symbols.begin(), grammar.alphabet_symbols.end(),
+					alphabet_symbol) == grammar.alphabet_symbols.end()) {
+			return {false, SyntaxTree()};
+		}
+	}
 	s += "$";
 	stack<EdgeVertex> path;
+	stack<SyntaxTree::Node*> nodes;
 	path.push({"", 0});
 	int current_position = 0;
 	while(true) {
@@ -201,34 +221,41 @@ bool LRAlgorithm::isRecognized(string s) {
 		current_symbol += s[current_position];
 		LRCell cell = table[path.top().state_number][current_symbol];
 		if (cell.cell_type == error) {
-			return false;
+			return {false, SyntaxTree()};
 		} else if (cell.cell_type == shift) {
 			if (current_symbol == "$") {
 				throw runtime_error("unexpected shift by $");
 			}
 			++current_position;
 			path.push(EdgeVertex{current_symbol, cell.number});
+			nodes.push(new SyntaxTree::Node{current_symbol, -1, {}});
 		} else if (cell.cell_type == reduce) {
+			string from_symbol = grammar.rules[cell.number].from;
+			SyntaxTree::Node* new_node = new SyntaxTree::Node{from_symbol, cell.number, {}};
 			if (states[path.top().state_number] == GoTo(states[0], "S", grammar) &&
 						current_position == static_cast<int>(s.size()) - 1) {
-				return true;
+				SyntaxTree result;
+				result.root = nodes.top();
+				return {true, result};
 			}
 			for (unsigned i = 0; i < grammar.rules[cell.number].to.size(); ++i) {
 				if (path.empty()) {
-					return false;
+					return {false, SyntaxTree()};
 				}
 				if (path.top().symbol != grammar.rules[cell.number].to[
 							grammar.rules[cell.number].to.size() - 1 - i]) {
 					throw runtime_error("unexpected error");
 				}
+				new_node->nodes.insert(new_node->nodes.begin(), nodes.top());
+				nodes.pop();
 				path.pop();
 			}
 			int current_state = path.top().state_number;
-			string from_symbol = grammar.rules[cell.number].from;
 			LRCell current_cell = table[current_state][from_symbol];
 			if (current_cell.cell_type != shift) {
-				return false;
+				return {false, SyntaxTree()};
 			}
+			nodes.push(new_node);
 			path.push({from_symbol, current_cell.number});
 		}
 	}

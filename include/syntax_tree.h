@@ -23,6 +23,8 @@ public:
 	Node* root = nullptr;
 };
 
+bool isRecognized(const Grammar& grammar, const string& word);
+
 SyntaxTree getSyntaxTree(const Grammar& grammar, const string& word);
 string getName(const SyntaxTree::Node* const node);
 vector<string> getVariables(const SyntaxTree::Node* const node);
@@ -31,3 +33,6 @@ SyntaxTree::Node* copy(const SyntaxTree::Node* const);
 
 ostream& operator << (ostream& os, const SyntaxTree::Node* const);
 ostream& operator << (ostream& os, const SyntaxTree&);
+
+bool operator == (const SyntaxTree&, const SyntaxTree&);
+bool areEqual (const SyntaxTree::Node* const, const SyntaxTree::Node* const);

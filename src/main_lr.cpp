@@ -28,6 +28,7 @@ int main() {
 	while(cin) {
 		string expression;
 		cin >> expression;
-		cout << lr_algorithm.isRecognized(expression) << endl;
+		bool is_recognized = lr_algorithm.isRecognized(expression);
+		cout << is_recognized << endl;
 	}
 }

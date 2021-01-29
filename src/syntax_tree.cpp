@@ -1,6 +1,7 @@
 #include "syntax_tree.h"
 #include "grammar.h"
 #include "earley.h"
+#include "lr_algorithm.h"
 
 #include <string>
 #include <iostream>
@@ -45,7 +46,13 @@ SyntaxTree& SyntaxTree::operator = (const SyntaxTree& syntax_tree) {
 	return *this;
 }
 
+bool isRecognized(const Grammar& grammar, const string& word) {
+	// return LRAlgorithm(grammar).isRecognized(word);
+	return EarleyAlgorithm().isRecognized(grammar, word);
+}
+
 SyntaxTree getSyntaxTree(const Grammar& grammar, const string& word) {
+	// return LRAlgorithm(grammar).getSyntaxTree(word);
 	return EarleyAlgorithm().getSyntaxTree(grammar, word);
 }
 
@@ -71,4 +78,21 @@ string getName(const SyntaxTree::Node* const node) {
 		result += getName(node->nodes[i]);
 	}
 	return result;
+}
+
+bool areEqual(const SyntaxTree::Node* const node1, const SyntaxTree::Node* const node2) {
+	if (node1->symbol != node2->symbol || node1->rule_number != node2->rule_number ||
+				node1->nodes.size() != node2->nodes.size()) {
+		return false;
+	}
+	for (unsigned i = 0; i < node1->nodes.size(); ++i) {
+		if (!areEqual(node1->nodes[i], node2->nodes[i])) {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool operator == (const SyntaxTree& syntax_tree1, const SyntaxTree& syntax_tree2) {
+	return areEqual(syntax_tree1.root, syntax_tree2.root);
 }

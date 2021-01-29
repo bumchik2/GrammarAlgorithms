@@ -6,12 +6,15 @@
 #include "earley.h"
 #include "pascal_variable.h"
 #include "interpreter.h"
+#include "lr_algorithm.h"
 
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <string>
 #include <memory>
 
+using std::to_string;
 using std::make_shared;
 using std::ifstream;
 using std::ostringstream;
@@ -193,19 +196,80 @@ void testIsRecognized() {
 	}
 	string correct_bracket_sequence = "((()())(()())())";
 	Assert(EarleyAlgorithm().isRecognized(grammar, correct_bracket_sequence),
-			"correct bracket sequence test failed");
+			"Earley correct bracket sequence test failed");
+	Assert(LRAlgorithm(grammar).isRecognized(correct_bracket_sequence),
+			"LR correct bracket sequence test failed");
 	string incorrect_bracket_sequence = "((()())((())())";
 	Assert(!EarleyAlgorithm().isRecognized(grammar, incorrect_bracket_sequence),
-				"incorrect bracket sequence test failed");
+			"Earley incorrect bracket sequence test failed");
+	Assert(!LRAlgorithm(grammar).isRecognized(incorrect_bracket_sequence),
+			"LR incorrect bracket sequence test failed");
+	Grammar grammar0;
+	grammar0.setStartingSymbol("S'");
+	vector<Rule> rules0 = {
+		{"S'", {"S"}},
+		{"S", {"S", "+", "U"}},
+		{"S", {"U"}},
+		{"U", {"n"}},
+		{"U", {"(", "S", ")"}}
+	};
+	for (unsigned i = 0; i < rules0.size(); ++i) {
+		grammar0.addRule(rules0[i]);
+	}
+	string correct_expression = "n+((n+(n+n+n)+n)+n)+n";
+	Assert(EarleyAlgorithm().isRecognized(grammar0, correct_expression),
+			"Earley correct expression test failed");
+	Assert(LRAlgorithm(grammar0).isRecognized(correct_expression),
+			"LR correct expression test failed");
+	string incorrect_expression = "n+((n+(n+n+n)+n)";
+	Assert(!EarleyAlgorithm().isRecognized(grammar, incorrect_expression),
+			"Earley incorrect expression sequence test failed");
+	Assert(!LRAlgorithm(grammar0).isRecognized(incorrect_expression),
+			"LR incorrect expression sequence test failed");
 }
 
-void testInterpreterOutput(const string& program, const string& expected_output) {
+void testLRIsRecognized() {
+	Grammar grammar;
+	grammar.setStartingSymbol("S'");
+	vector<Rule> rules = {
+		{"S'", {"S"}},
+		{"S", {}},
+		{"S", {"(", "S", ")", "S"}}
+	};
+	for (unsigned i = 0; i < rules.size(); ++i) {
+		grammar.addRule(rules[i]);
+	}
+	Grammar grammar0;
+	grammar0.setStartingSymbol("S'");
+	vector<Rule> rules0 = {
+		{"S'", {"S"}},
+		{"S", {"S", "+", "U"}},
+		{"S", {"U"}},
+		{"U", {"n"}},
+		{"U", {"(", "S", ")"}}
+	};
+	for (unsigned i = 0; i < rules0.size(); ++i) {
+		grammar0.addRule(rules0[i]);
+	}
+	string correct_expression = "n+n";
+	Assert(EarleyAlgorithm().isRecognized(grammar0, correct_expression),
+			"Earley correct expression test failed");
+	Assert(LRAlgorithm(grammar0).isRecognized(correct_expression),
+			"LR correct expression test failed");
+	string incorrect_expression = "n+((n+(n+n+n)+n)";
+	Assert(!LRAlgorithm(grammar0).isRecognized(incorrect_expression),
+			"LR incorrect expression sequence test failed");
+
+}
+
+void testInterpreterOutput(const string& program, const string& expected_output, 
+		int test_number) {
 	ostringstream os;
 	Grammar grammar;
 	ifstream fin1("../data/grammar.txt");
 	fin1 >> grammar;
-	if (!EarleyAlgorithm().isRecognized(grammar, program)) {
-		throw runtime_error("program is incorrect, bad test");
+	if (!isRecognized(grammar, program)) {
+		throw runtime_error("program is incorrect, bad test " + to_string(test_number));
 	}
 	Interpreter().interpret(getSyntaxTree(grammar, program), grammar, os);
 	AssertEqual(os.str(), expected_output);
@@ -223,10 +287,29 @@ void testSyntaxTree() {
 	}
 	string word = "(()())";
 	Assert(EarleyAlgorithm().isRecognized(grammar, word),
-			"(()()) is a correct bracket sequence");
-	SyntaxTree syntax_tree = getSyntaxTree(grammar, word);
+			"Earley: (()()) is a correct bracket sequence");
+	SyntaxTree syntax_tree = EarleyAlgorithm().getSyntaxTree(grammar, word);
 	AssertEqual(getName(syntax_tree.root), word, "S |-- word");
 	AssertEqual(syntax_tree.root->rule_number, 1, "rule 1 should be used first");
+	Grammar grammar0;
+	grammar0.setStartingSymbol("S'");
+	vector<Rule> rules0 = {
+		{"S'", {"S"}},
+		{"S", {"S", "+", "U"}},
+		{"S", {"U"}},
+		{"U", {"n"}},
+		{"U", {"(", "S", ")"}}
+	};
+	for (unsigned i = 0; i < rules0.size(); ++i) {
+		grammar0.addRule(rules0[i]);
+	}
+	string expression = "n+((n+(n+n)+n)+n+n)+(n+n)";
+	Assert(LRAlgorithm(grammar0).isRecognized(expression) &&
+			EarleyAlgorithm().isRecognized(grammar0, expression), 
+			"both algorithms should recognize the correct expression");
+	SyntaxTree syntax_tree1 = EarleyAlgorithm().getSyntaxTree(grammar0, expression);
+	SyntaxTree syntax_tree2 = LRAlgorithm(grammar0).getSyntaxTree(expression);
+	AssertEqual(syntax_tree1, syntax_tree2);
 }
 
 void testPascalVariables() {
@@ -250,34 +333,38 @@ void testPascalVariables() {
 	Assert(isTrue(make_shared<PascalInteger>(1)), "1 should be casted to True");
 }
 
+struct interpreterTest {
+	string program;
+	string expected_output;
+};
+
 void testInterpreter() {
-	testInterpreterOutput("begin end.", "");
-	testInterpreterOutput("begin writeln('hello, world!'); end.", "hello, world!\n");
-	testInterpreterOutput("begin writeln(2 + 2 * 2); end.", "6\n");
-	testInterpreterOutput("begin writeln(True); end.", "True\n");
-	testInterpreterOutput("var i: integer; begin for i := 1 to 5 do write(i); end.", 
-			              "1 2 3 4 5 ");
-	testInterpreterOutput("var i: integer; begin i := 5;"
-	                      "while i > 0 do begin writeln(i * i); i := i - 1; end; end.", 
-	                      "25\n16\n9\n4\n1\n");
-	testInterpreterOutput("var i: integer; begin i := 5;"
-	                      "if False then writeln(1); else writeln(0); end.", 
-	                      "0\n");
-	testInterpreterOutput("var begin "
-	                      "write(Not (Not True Or Not(False And True And False Or True)));"
-	                      "end.", "True ");
-	testInterpreterOutput("var begin"
-	                      "write(1.0 / 10);"
-	                      "end.", "0.1 ");
-	testInterpreterOutput("var s:string;begin "
-	                      "s := 'abcd'; write(s[0]); s[0] := 'x'; writeln(s[0]);"
-	                      "end.", "a x\n");
-	testInterpreterOutput("var s: string; begin "
-	                      "s := 'ab'; s := s + s; s := s + s; writeln(s);"
-	                      "end.", "abababab\n");
-	testInterpreterOutput("var sa, sb: string; begin "
-	                      "sa := 'ab'; sb := 'cd'; writeln((sa+sb)[3]);"
-	                      "end.", "d\n");
+	const vector<interpreterTest> tests = {
+		{"begin end.", ""},
+		{"begin writeln('hello, world!'); end.", "hello, world!\n"},
+		{"begin writeln(2 + 2 * 2); end.", "6\n"},
+		{"begin writeln(True); end.", "True\n"},
+		{"var i: integer; begin for i := 1 to 5 do write(i); end.", 
+				"1 2 3 4 5 "},
+		{"var i: integer; begin i := 5;"
+			"while i > 0 do begin writeln(i * i); i := i - 1; end; end.", 
+			"25\n16\n9\n4\n1\n"},
+		{"var i: integer; begin i := 5;"
+				"if False then writeln(1); else writeln(0); end.", 
+				"0\n"},
+		{"var begin write(Not (Not True Or Not(False And True And False Or True)));"
+				"end.", "True "},
+		{"var begin write(1.0 / 10); end.", "0.1 "},
+		{"var s:string;begin s := 'abcd'; write(s[0]); s[0] := 'x'; writeln(s[0]);"
+				"end.", "a x\n"},
+		{"var s: string; begin s := 'ab'; s := s + s; s := s + s; writeln(s);"
+				"end.", "abababab\n"},
+		{"var sa, sb: string; begin sa := 'ab'; sb := 'cd'; writeln((sa+sb)[3]);"
+				"end.", "d\n"}
+	};
+	for (unsigned i = 0; i < tests.size(); ++i) {
+		testInterpreterOutput(tests[i].program, tests[i].expected_output, i);
+	}
 }
 
 void runTests() {
@@ -293,7 +380,7 @@ void runTests() {
 	test_runner.RunTest(testComplete, "test complete in earley algorithm");
 	test_runner.RunTest(testScan, "test scan in earley algorithm");
 	test_runner.RunTest(testSituationsUpdating, "test situations updating");
-	test_runner.RunTest(testIsRecognized, "test earley algorithm 'is recognized' function");
+	test_runner.RunTest(testIsRecognized, "test 'is recognized'");
 	test_runner.RunTest(testSyntaxTree, "test syntax tree");
 	test_runner.RunTest(testPascalVariables, "test pascal variable");
 	test_runner.RunTest(testInterpreter, "test pascal interpreter");

@@ -3,9 +3,11 @@
 
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 
 using std::unordered_map;
 using std::unordered_set;
+using std::pair;
 
 class LRSituation {
 public:
@@ -61,9 +63,11 @@ public:
 		this->grammar.addAlphabetSymbol("$");
 		createTable();
 	}
-	bool isRecognized(string);
+	SyntaxTree getSyntaxTree(const string&);
+	bool isRecognized(const string&);
 	void printTable() const;
 public:
+	pair<bool, SyntaxTree> analize(string);
 	LRCell getCell(int state_number, const string& symbol) const;
 	void createTable();
 	void LRDFS(int state_number);
