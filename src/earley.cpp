@@ -1,16 +1,21 @@
 #include "grammar.h"
+#include "syntax_tree.h"
 #include "earley.h"
 
 #include <vector>
 #include <algorithm>
 #include <unordered_set>
 #include <iostream>
+#include <unordered_map>
+#include <utility>
 
 using std::cout;
 using std::endl;
 using std::vector;
 using std::find;
 using std::unordered_set;
+using std::unordered_map;
+using std::make_pair;
 
 ostream& operator << (ostream& os, const Situation& s) {
 	os << s.rule << ' ' << s.deduced_prefix_length << ' ' << s.position_in_rule;
@@ -26,6 +31,12 @@ size_t SituationHash::operator () (const Situation& s) const {
 bool operator == (const Situation& s1, const Situation& s2) {
 	return s1.rule == s2.rule && s1.deduced_prefix_length == s2.deduced_prefix_length &&
 			s1.position_in_rule == s2.position_in_rule;
+}
+
+bool operator == (const SituationAndNumber& situation_and_number1,
+		const SituationAndNumber& situation_and_number2) {
+	return situation_and_number1.situation == situation_and_number2.situation &&
+			situation_and_number1.number == situation_and_number2.number;
 }
 
 void EarleyAlgorithm::initialize_(const Grammar& grammar, const string& s) {
@@ -81,6 +92,11 @@ bool EarleyAlgorithm::complete_(int d_number, const string& s) {
 			Situation new_situation = complete_(situation_k);
 			auto insert_result = D_situations_[d_number].insert(new_situation);
 			new_situation_appeared |= insert_result.second;
+
+			parent_situations.complete_parent1.emplace(SituationAndNumber{new_situation, d_number},
+					SituationAndNumber{situation_k, situation_j.deduced_prefix_length});
+			parent_situations.complete_parent2.emplace(SituationAndNumber{new_situation, d_number},
+					SituationAndNumber{situation_j, d_number});
 		}
 	}
 	return new_situation_appeared;
@@ -102,12 +118,18 @@ void EarleyAlgorithm::scan_(int d_number, const string& s) {
 			}
 			Situation new_situation = scan_(situation);
 			D_situations_[d_number + 1].insert(new_situation);
+
+			parent_situations.scan_parent.emplace(SituationAndNumber{new_situation, d_number + 1},
+					SituationAndNumber{situation, d_number});
 		}
 	}
 }
 
 void EarleyAlgorithm::finalize_() {
 	D_situations_.clear();
+	parent_situations.complete_parent1.clear();
+	parent_situations.complete_parent2.clear();
+	parent_situations.scan_parent.clear();
 }
 
 bool EarleyAlgorithm::isRecognized(const Grammar& grammar, const string& s) {
@@ -135,6 +157,49 @@ bool EarleyAlgorithm::isRecognized(const Grammar& grammar, const string& s) {
 	Situation desired_situation(desired_rule, 0, 1); // (S'->S., 0) situation
 	bool answer = std::find(D_situations_[s.size()].begin(), D_situations_[s.size()].end(),
 			desired_situation) != D_situations_[s.size()].end();
-	finalize_();
 	return answer;
+}
+
+SyntaxTree::Node* EarleyAlgorithm::getSyntaxTreeVertex(SituationAndNumber situation_and_number, const Grammar& grammar) {
+	const Situation& situation = situation_and_number.situation;
+	SyntaxTree::Node* result = new SyntaxTree::Node();
+	result->symbol = situation.rule.from;
+	result->rule_number = find(grammar.rules.begin(), grammar.rules.end(),
+			situation.rule) - grammar.rules.begin();
+	result->nodes.resize(situation.rule.to.size());
+
+	if (result->nodes.size() == 0) {
+		result->nodes.resize(1);
+		result->nodes[0] = new SyntaxTree::Node{"", -1, {}};
+		return result;
+	}
+
+	for (int i = static_cast<int>(result->nodes.size()) - 1; i >= 0; --i) {
+		string current_symbol = situation.rule.to[i];
+		if (isAlphabetSymbol(current_symbol)) {
+			result->nodes[i] = new SyntaxTree::Node{current_symbol, -1, {}};
+			situation_and_number = parent_situations.scan_parent.at(situation_and_number);
+		} else {
+			result->nodes[i] = getSyntaxTreeVertex(parent_situations.complete_parent2.at(
+					situation_and_number), grammar);
+
+			situation_and_number = parent_situations.complete_parent1.at(situation_and_number);
+		}
+	}
+	return result;
+}
+
+SyntaxTree EarleyAlgorithm::getSyntaxTree(const Grammar& grammar, const string& s) {
+	bool is_recognized = isRecognized(grammar, s);
+	if (!is_recognized) {
+		return SyntaxTree();
+	}
+
+	SyntaxTree result;
+	Rule desired_rule = {"S'", {"S"}};
+	Situation desired_situation(desired_rule, 0, 1); // (S'->S., 0) situation
+	SituationAndNumber previous_situation_and_number = parent_situations.complete_parent2.at(
+			SituationAndNumber{desired_situation, static_cast<int>(s.size())});
+	result.root = getSyntaxTreeVertex(previous_situation_and_number, grammar);
+	return result;
 }

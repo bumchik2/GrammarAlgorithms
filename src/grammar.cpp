@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <unordered_set>
+#include <unordered_map>
 
 #include "grammar.h"
 
@@ -16,14 +17,22 @@ using std::find;
 using std::endl;
 using std::cout;
 using std::unordered_set;
+using std::unordered_map;
 
 const unordered_set<string> special_alphabet_symbols = {
-	"(", ")", "{", "}", "{", "}"
+    "(", ")", "{", "}", "{", "}", ";", ":", ".", ",", "[", "]", "O", "A", "$",
+    " ", "\n", "*", "+", "-", "/", "=", "<", ">", "'", "F", "T", "N", "!"
+};
+
+const unordered_map<string, string> special_alias = {
+    {"space", " "},
+    {"newline", "\n"}
 };
 
 bool isAlphabetSymbol(const string& symbol) {
     return (symbol.size() == 1 && symbol[0] >= 'a' && symbol[0] <= 'z') ||
-    		special_alphabet_symbols.find(symbol) != special_alphabet_symbols.end();
+            (symbol.size() == 1 && symbol[0] >= '0' && symbol[0] <= '9') ||
+            special_alphabet_symbols.find(symbol) != special_alphabet_symbols.end();
 }
 
 bool operator == (const Rule& rule1, const Rule& rule2) {
@@ -37,6 +46,9 @@ istream& operator >> (istream& is, Rule& rule) {
     rule.to = vector<string>(symbols_number);
     for (int i = 0; i < symbols_number; ++i) {
         is >> rule.to[i];
+        if (special_alias.find(rule.to[i]) != special_alias.end()) {
+            rule.to[i] = special_alias.at(rule.to[i]);
+        }
     }
     return is;
 }
@@ -66,14 +78,27 @@ void Grammar::setStartingSymbol(const string& new_starting_symbol) {
 }
 
 void Grammar::addSymbol(const string& symbol) {
-	if (symbol == "epsilon") {
-		return;
-	}
+    if (symbol == "epsilon") {
+        return;
+    }
     if (isAlphabetSymbol(symbol)) {
         return;
     }
     if (find(symbols.begin(), symbols.end(), symbol) == symbols.end()) {
         symbols.push_back(symbol);
+    }
+}
+
+void Grammar::addAlphabetSymbol(const string& alphabet_symbol) {
+    if (alphabet_symbol == "epsilon") {
+        return;
+    }
+    if (!isAlphabetSymbol(alphabet_symbol)) {
+        return;
+    }
+    if (find(alphabet_symbols.begin(), alphabet_symbols.end(), alphabet_symbol) == 
+                alphabet_symbols.end()) {
+        alphabet_symbols.push_back(alphabet_symbol);
     }
 }
 
@@ -83,6 +108,7 @@ void Grammar::addRule(const Rule& rule) {
         addSymbol(rule.from);
         for (unsigned i = 0; i < rule.to.size(); ++i) {
             addSymbol(rule.to[i]);
+            addAlphabetSymbol(rule.to[i]);
         }
     }
 }
@@ -101,20 +127,20 @@ bool Grammar::containsRule(const Rule& rule) const {
 }
 
 bool operator == (const Grammar& grammar1, const Grammar& grammar2) {
-	if (grammar1.starting_symbol != grammar2.starting_symbol) {
-		return false;
-	}
-	if (grammar1.rules.size() != grammar2.rules.size()) {
-		return false;
-	}
-	for (unsigned rule_number = 0; rule_number < grammar1.rules.size(); ++rule_number) {
-		Rule rule = grammar1.rules[rule_number];
-		if (find(grammar2.rules.begin(), grammar2.rules.end(), rule) ==
-				grammar2.rules.end()) {
-			return false;
-		}
-	}
-	return true;
+    if (grammar1.starting_symbol != grammar2.starting_symbol) {
+        return false;
+    }
+    if (grammar1.rules.size() != grammar2.rules.size()) {
+        return false;
+    }
+    for (unsigned rule_number = 0; rule_number < grammar1.rules.size(); ++rule_number) {
+        Rule rule = grammar1.rules[rule_number];
+        if (find(grammar2.rules.begin(), grammar2.rules.end(), rule) ==
+                grammar2.rules.end()) {
+            return false;
+        }
+    }
+    return true;
 }
 
 istream& operator >> (istream& is, Grammar& grammar) {

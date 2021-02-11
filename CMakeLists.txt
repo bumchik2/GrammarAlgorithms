@@ -9,6 +9,10 @@ add_executable(main
   ${PROJECT_SOURCE_DIR}/src/main.cpp
   ${PROJECT_SOURCE_DIR}/src/grammar.cpp
   ${PROJECT_SOURCE_DIR}/src/earley.cpp
+  ${PROJECT_SOURCE_DIR}/src/pascal_variable.cpp
+  ${PROJECT_SOURCE_DIR}/src/interpreter.cpp
+  ${PROJECT_SOURCE_DIR}/src/syntax_tree.cpp
+  ${PROJECT_SOURCE_DIR}/src/lr_algorithm.cpp
 )
 
 add_executable(test
@@ -16,7 +20,22 @@ add_executable(test
   ${PROJECT_SOURCE_DIR}/src/grammar.cpp
   ${PROJECT_SOURCE_DIR}/src/earley.cpp
   ${PROJECT_SOURCE_DIR}/src/chomsky_to_greybuh.cpp
+  ${PROJECT_SOURCE_DIR}/src/syntax_tree.cpp
+  ${PROJECT_SOURCE_DIR}/src/pascal_variable.cpp
+  ${PROJECT_SOURCE_DIR}/src/interpreter.cpp
+  ${PROJECT_SOURCE_DIR}/src/lr_algorithm.cpp
+)
+
+add_executable(main_lr
+  ${PROJECT_SOURCE_DIR}/src/main_lr.cpp
+  ${PROJECT_SOURCE_DIR}/src/grammar.cpp
+  ${PROJECT_SOURCE_DIR}/src/earley.cpp
+  ${PROJECT_SOURCE_DIR}/src/pascal_variable.cpp
+  ${PROJECT_SOURCE_DIR}/src/interpreter.cpp
+  ${PROJECT_SOURCE_DIR}/src/syntax_tree.cpp
+  ${PROJECT_SOURCE_DIR}/src/lr_algorithm.cpp
 )
 
 target_include_directories(main PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_include_directories(test PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(main_lr PRIVATE ${PROJECT_SOURCE_DIR}/include)

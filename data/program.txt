@@ -1,0 +1,52 @@
+var
+  a, b, c, d, e, i, j: integer;
+  s: string;
+  bool, check: boolean;
+  x, y, z: real;
+begin
+  s := 'abcdef';
+  bool := s[0] <> s[1];
+  if bool then writeln('hey');
+  a := 3;
+  b := -15;
+  c := 18;
+  d := 0;
+  for e:=-100 to 100 do begin
+    if e*e*e*a+e*e*b+e*c+d=0 then
+      writeln (e);
+  end;
+  s[0] := 'x';
+  s[1] := 'y';
+  s[2] := 'z';
+  s[3] := s[1];
+  s[4] := s[0];
+  check := True;
+  writeln(s);
+  x := 3.14;
+  y := x * x - 2 * x;
+  z := 2.71;
+  writeln(x * (y - z / x) + 3 * ((x) * (z - x * y)));
+  writeln((((((((x))))))));
+  if x then 
+    writeln('hello, world!'); 
+  else begin 
+    writeln('something went wrong(');
+  end;
+  s := s + s;
+  writeln(s);
+  s := (s + s + (s + s)) + s;
+  writeln(s);
+  a := 1;
+  for i := 1 to 10 do begin
+    a := a * i;
+  end;
+  writeln(a);
+  for i := 1 to 10 do begin
+    for j := 1 to 10 do begin
+      write(i * j);
+    end;
+    writeln('');
+  end;
+  if Not(Not True Or Not(False And 0 And False Or (2 * 2 = 4))) then
+    writeln(True Or False);
+end.
